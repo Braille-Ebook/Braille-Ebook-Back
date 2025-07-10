@@ -1,0 +1,33 @@
+{
+  "name": "brailleebookback",
+  "version": "1.0.0",
+  "description": "Braille-Ebook은 눈이 불편하신 분들을 위한 점자 이북입니다.\r <br/>\r <br/>",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "dev": "nodemon src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Braille-Ebook/BrailleEbookBack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Braille-Ebook/BrailleEbookBack/issues"
+  },
+  "homepage": "https://github.com/Braille-Ebook/BrailleEbookBack#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.12",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
