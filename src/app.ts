@@ -9,21 +9,13 @@ app.get('/', (req, res) => {
     res.send('Hello TypeScript Backend!');
 });
 
-const startServer = async () => {
+export const syncDB = async () => {
     try {
-        await sequelize.sync({ alter: true }); // DB 테이블 동기화
+        await sequelize.sync({ alter: true });
         console.log('DB 동기화 완료');
-
-        const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => {
-            console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error('DB 동기화 실패:', error);
-        process.exit(1);
+    } catch (err) {
+        console.error('DB 동기화 실패:', err);
     }
 };
-
-startServer();
 
 export default app;
