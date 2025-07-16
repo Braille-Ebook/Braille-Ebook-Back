@@ -4,7 +4,7 @@
     "description": "Braille-Ebook은 눈이 불편하신 분들을 위한 점자 이북입니다.\r <br/>\r <br/>",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node src/server.ts",
+        "start": "ts-node --files src/server.ts",
         "dev": "nodemon src/server.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -28,12 +28,16 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "dotenv": "^17.2.0",
+        "@types/cookie-parser": "^1.4.9",
+        "@types/express-session": "^1.18.2",
         "@types/morgan": "^1.9.10",
+        "cookie-parser": "^1.4.7",
+        "dotenv": "^17.2.0",
         "express": "^5.1.0",
+        "express-session": "^1.18.1",
+        "morgan": "^1.10.0",
         "mysql2": "^3.14.2",
         "sequelize": "^6.37.7",
-        "sequelize-typescript": "^2.1.6",
-        "morgan": "^1.10.0"
+        "sequelize-typescript": "^2.1.6"
     }
 }
