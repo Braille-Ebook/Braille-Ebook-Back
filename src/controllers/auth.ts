@@ -12,6 +12,9 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
             return res.redirect('/join?error=exist'); //유저 있으면 에러
         }
 
+        if (!password || password.length < 6) {
+            return res.redirect('/join?error=shortpassword'); //비밀번호 최소 6자
+        }
         const hash = await bcrypt.hash(password, 12); //비밀번호 암호화
 
         await User.create({

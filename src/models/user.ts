@@ -46,9 +46,6 @@ User.init(
         password: {
             type: DataTypes.STRING(100),
             allowNull: true,
-            validate: {
-                len: [6, 100], //최소 6자 이상
-            },
         },
         nickname: {
             type: DataTypes.STRING(50),
