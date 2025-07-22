@@ -39,10 +39,16 @@ User.init(
             type: DataTypes.STRING(100),
             allowNull: true,
             unique: true,
+            validate: {
+                isEmail: true, //이메일 형식인 지 확인
+            },
         },
         password: {
             type: DataTypes.STRING(100),
             allowNull: true,
+            validate: {
+                len: [6, 100], //최소 6자 이상
+            },
         },
         nickname: {
             type: DataTypes.STRING(50),
