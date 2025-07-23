@@ -19,7 +19,7 @@ Book.init(
         author: DataTypes.STRING(20),
         translator: {
             type: DataTypes.STRING(20),
-            allowNull: false,
+            allowNull: true,
         },
         publisher: DataTypes.STRING(20),
         publish_date: DataTypes.DATE,
