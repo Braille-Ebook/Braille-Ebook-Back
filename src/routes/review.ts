@@ -4,6 +4,7 @@ import {
     postReviews,
     deleteReviews,
     updateReviews,
+    likeReviews,
 } from '../controllers/review';
 
 const router = express.Router({ mergeParams: true });
@@ -12,5 +13,6 @@ router.get('/', getReviews); //해당 책에 대한 리뷰 모두 get
 router.post('/', postReviews); //새 리뷰 post하기
 router.delete('/:reviewId', deleteReviews);
 router.patch('/:reviewId', updateReviews);
+router.post('/:reviewId/like', likeReviews);
 
 export default router;

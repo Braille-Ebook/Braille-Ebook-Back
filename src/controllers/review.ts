@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { Review } from '../models';
+import { Review, UserReviewLike } from '../models';
 
 const user_id = 1; //더미 데이터
 
@@ -45,4 +45,25 @@ const updateReviews: RequestHandler = async (req, res) => {
     res.sendStatus(200);
 };
 
-export { getReviews, postReviews, deleteReviews, updateReviews };
+const likeReviews: RequestHandler = async (req, res) => {
+    const existing = await UserReviewLike.findOne({
+        where: {
+            user_id: user_id,
+            review_id: req.params.reviewId,
+        },
+    });
+
+    if (existing) {
+        // Unlike
+        await existing.destroy();
+    } else {
+        //Like
+        await UserReviewLike.create({
+            user_id: user_id,
+            review_id: req.params.reviewId,
+        });
+    }
+    res.sendStatus(200);
+};
+
+export { getReviews, postReviews, deleteReviews, updateReviews, likeReviews };
