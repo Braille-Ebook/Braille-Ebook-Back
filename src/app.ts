@@ -48,6 +48,7 @@ app.use((req, res, next) => {
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     console.error(err);
     res.status(err.status || 500);
+    res.send(err.message);
 };
 app.use(errorHandler);
 
