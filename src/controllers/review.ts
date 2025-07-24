@@ -10,6 +10,22 @@ const getReviews: RequestHandler = async (req, res, next) => {
                 book_id: req.params.bookId,
             },
         });
+        const reviewsWithIsLiked = await Promise.all(
+            reviews.map(async (r) => {
+                const isLiked = await UserReviewLike.findOne({
+                    where: {
+                        user_id: user_id,
+                        review_id: r.dataValues.review_id,
+                    },
+                });
+
+                return {
+                    ...r.toJSON(), // convert Sequelize instance to plain object
+                    isLiked: r.dataValues.user_id == user_id ? null : !!isLiked,
+                };
+            })
+        );
+        console.log(reviewsWithIsLiked);
         res.status(200).send(reviews);
     } catch (e) {
         next(e);
