@@ -25,8 +25,7 @@ const getReviews: RequestHandler = async (req, res, next) => {
                 };
             })
         );
-        console.log(reviewsWithIsLiked);
-        res.status(200).send(reviews);
+        res.status(200).send(reviewsWithIsLiked);
     } catch (e) {
         next(e);
     }
