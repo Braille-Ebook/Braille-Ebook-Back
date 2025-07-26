@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { isBookIdValid, isReviewIdValid } from './review';
 
-export const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
+const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
     if (req.isAuthenticated()) {
         next();
     } else {
@@ -8,14 +9,12 @@ export const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export const isNotLoggedIn = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
     if (!req.isAuthenticated()) {
         next();
     } else {
         res.redirect('/');
     }
 };
+
+export { isLoggedIn, isNotLoggedIn, isBookIdValid, isReviewIdValid };

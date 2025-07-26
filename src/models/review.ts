@@ -24,7 +24,14 @@ Review.init(
             type: DataTypes.INTEGER,
             defaultValue: 0,
         },
-        created_at: DataTypes.DATE,
+        created_at: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        },
+        content: {
+            type: DataTypes.STRING(500),
+            allowNull: false,
+        },
     },
     {
         sequelize,
