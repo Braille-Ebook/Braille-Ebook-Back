@@ -15,6 +15,14 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
             }); //유저 있으면 에러
         }
 
+        const exNick = await User.findOne({ where: { nickname: nick } });
+        if (exNick) {
+            return res.status(400).json({
+                success: false,
+                message: '이미 사용 중인 닉네임입니다.',
+            });
+        }
+
         if (!password || password.length < 6) {
             return res.status(400).json({
                 success: false,

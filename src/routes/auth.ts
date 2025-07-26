@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/join', isNotLoggedIn, join);
 router.post('/login', isNotLoggedIn, login);
-router.get('/logout', isLoggedIn, logout);
+router.post('/logout', isLoggedIn, logout);
 
 // Kakao OAuth
 router.get('/kakao', passport.authenticate('kakao'));
