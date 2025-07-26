@@ -15,7 +15,7 @@ const getBestTwoReviews = async (bookId: string) => {
 
 //리뷰의 주인이 유저인지 확인하는 서비스 함수입니다. 사용법은 다음과 같습니다:
 //await isUserOwnerOfReview(user_id, req.params.reviewId)
-const isUserOwnerOfReview = async (userId: string, reviewId: string) => {
+const isUserOwnerOfReview = async (userId: number, reviewId: string) => {
     const reviewOwner = await Review.findByPk(reviewId, {
         attributes: ['user_id'],
     });

@@ -17,7 +17,7 @@ passportConfig();
 
 export const syncDB = async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         console.log('DB 동기화 완료');
     } catch (err) {
         console.error('DB 동기화 실패:', err);
@@ -57,8 +57,8 @@ app.use('/auth', authRouter);
 app.use(passport.initialize());
 app.use(passport.session()); //로그인 상태 세션 기반으로 유지
 
-app.use('/auth', authRouter);
 app.use('/', pageRouter);
+app.use('/auth', authRouter);
 app.use('/book/:bookId/review', reviewRouter);
 
 app.use((req, res, next) => {

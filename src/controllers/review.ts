@@ -2,8 +2,6 @@ import { RequestHandler } from 'express';
 import { Review, UserReviewLike } from '../models';
 import { isUserOwnerOfReview } from '../services/review';
 
-const user_id = '1'; //더미 데이터
-
 const getReviews: RequestHandler = async (req, res, next) => {
     try {
         const reviews = await Review.findAll({
@@ -15,14 +13,17 @@ const getReviews: RequestHandler = async (req, res, next) => {
             reviews.map(async (r) => {
                 const isLiked = await UserReviewLike.findOne({
                     where: {
-                        user_id: user_id,
+                        user_id: req.user!.user_id, //isLoggedIn 함수로 req.user의 존재여부는 확실하기 때문에 !. 사용
                         review_id: r.dataValues.review_id,
                     },
                 });
 
                 return {
                     ...r.toJSON(), // convert Sequelize instance to plain object
-                    isLiked: r.dataValues.user_id == user_id ? null : !!isLiked,
+                    isLiked:
+                        r.dataValues.user_id == req.user!.user_id
+                            ? null
+                            : !!isLiked,
                 };
             })
         );
@@ -35,7 +36,7 @@ const getReviews: RequestHandler = async (req, res, next) => {
 const postReviews: RequestHandler = async (req, res, next) => {
     try {
         await Review.create({
-            user_id,
+            user_id: req.user!.user_id,
             book_id: req.params.bookId,
             content: req.body.content,
         });
@@ -47,7 +48,9 @@ const postReviews: RequestHandler = async (req, res, next) => {
 
 const deleteReviews: RequestHandler = async (req, res, next) => {
     try {
-        if (!(await isUserOwnerOfReview(user_id, req.params.reviewId))) {
+        if (
+            !(await isUserOwnerOfReview(req.user!.user_id, req.params.reviewId))
+        ) {
             const error = new Error('다른 유저의 리뷰는 삭제할 수 없습니다.');
             error.status = 400;
             next(error);
@@ -65,7 +68,9 @@ const deleteReviews: RequestHandler = async (req, res, next) => {
 
 const updateReviews: RequestHandler = async (req, res, next) => {
     try {
-        if (!(await isUserOwnerOfReview(user_id, req.params.reviewId))) {
+        if (
+            !(await isUserOwnerOfReview(req.user!.user_id, req.params.reviewId))
+        ) {
             const error = new Error('다른 유저의 리뷰는 수정할 수 없습니다.');
             error.status = 400;
             next(error);
@@ -88,7 +93,7 @@ const updateReviews: RequestHandler = async (req, res, next) => {
 
 const likeReviews: RequestHandler = async (req, res, next) => {
     try {
-        if (await isUserOwnerOfReview(user_id, req.params.reviewId)) {
+        if (await isUserOwnerOfReview(req.user!.user_id, req.params.reviewId)) {
             const error = new Error(
                 '자신의 리뷰에는 좋아요를 누를 수 없습니다.'
             );
@@ -98,7 +103,7 @@ const likeReviews: RequestHandler = async (req, res, next) => {
 
         const existing = await UserReviewLike.findOne({
             where: {
-                user_id: user_id,
+                user_id: req.user!.user_id,
                 review_id: req.params.reviewId,
             },
         });
@@ -109,7 +114,7 @@ const likeReviews: RequestHandler = async (req, res, next) => {
         } else {
             //Like
             await UserReviewLike.create({
-                user_id: user_id,
+                user_id: req.user!.user_id,
                 review_id: req.params.reviewId,
             });
         }
