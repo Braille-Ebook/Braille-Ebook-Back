@@ -2,10 +2,14 @@ import express, { ErrorRequestHandler } from 'express';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import session from 'express-session';
+import passport from 'passport';
 import sequelize from './sequelize';
+import authRouter from './routes/auth';
+import passportConfig from './passport';
 import './models';
 
 const app = express();
+passportConfig();
 
 export const syncDB = async () => {
     try {
@@ -17,7 +21,13 @@ export const syncDB = async () => {
 };
 
 app.use(morgan('dev'));
-app.use(express.json());
+app.use((req, res, next) => {
+    if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+        express.json()(req, res, next);
+    } else {
+        next();
+    }
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(
@@ -31,6 +41,12 @@ app.use(
         },
     })
 );
+
+//passport 연결
+app.use(passport.initialize());
+app.use(passport.session()); //로그인 상태 세션 기반으로 유지
+
+app.use('/auth', authRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello TypeScript Backend!');
