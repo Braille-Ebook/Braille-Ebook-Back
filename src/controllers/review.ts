@@ -27,7 +27,11 @@ const getReviews: RequestHandler = async (req, res, next) => {
                 };
             })
         );
-        res.status(200).send(reviewsWithIsLiked);
+        res.status(200).send({
+            success: true,
+            message: '리뷰 불러오기가 성공했습니다.',
+            data: reviewsWithIsLiked,
+        });
     } catch (e) {
         next(e);
     }
@@ -40,7 +44,9 @@ const postReviews: RequestHandler = async (req, res, next) => {
             book_id: req.params.bookId,
             content: req.body.content,
         });
-        return res.sendStatus(200);
+        return res
+            .status(200)
+            .send({ success: true, message: '리뷰 작성을 성공했습니다.' });
     } catch (e) {
         next(e);
     }
@@ -60,7 +66,10 @@ const deleteReviews: RequestHandler = async (req, res, next) => {
                 review_id: req.params.reviewId,
             },
         });
-        return res.sendStatus(200);
+        return res.status(200).send({
+            success: true,
+            message: '리뷰 삭제를 성공했습니다.',
+        });
     } catch (e) {
         next(e);
     }
@@ -85,7 +94,10 @@ const updateReviews: RequestHandler = async (req, res, next) => {
                 },
             }
         );
-        res.sendStatus(200);
+        res.status(200).send({
+            success: true,
+            message: '리뷰 업데이트를 성공했습니다.',
+        });
     } catch (e) {
         next(e);
     }
@@ -118,7 +130,10 @@ const likeReviews: RequestHandler = async (req, res, next) => {
                 review_id: req.params.reviewId,
             });
         }
-        res.sendStatus(200);
+        res.status(200).send({
+            success: true,
+            message: '좋아요 누르기를 성공했습니다.',
+        });
     } catch (e) {
         next(e);
     }
