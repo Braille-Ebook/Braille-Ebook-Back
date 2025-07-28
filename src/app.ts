@@ -4,6 +4,10 @@ import morgan from 'morgan';
 import session from 'express-session';
 import passport from 'passport';
 import sequelize from './sequelize';
+import path from 'path';
+
+import pageRouter from './routes/page';
+import reviewRouter from './routes/review';
 import authRouter from './routes/auth';
 import passportConfig from './passport';
 import './models';
@@ -21,6 +25,7 @@ export const syncDB = async () => {
 };
 
 app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
         express.json()(req, res, next);
@@ -48,9 +53,13 @@ app.use(passport.session()); //로그인 상태 세션 기반으로 유지
 
 app.use('/auth', authRouter);
 
-app.get('/', (req, res) => {
-    res.send('Hello TypeScript Backend!');
-});
+//passport 연결
+app.use(passport.initialize());
+app.use(passport.session()); //로그인 상태 세션 기반으로 유지
+
+app.use('/', pageRouter);
+app.use('/auth', authRouter);
+app.use('/book/:bookId/review', reviewRouter);
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
@@ -59,7 +68,10 @@ app.use((req, res, next) => {
 });
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     console.error(err);
-    res.status(err.status || 500);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message,
+    });
 };
 app.use(errorHandler);
 

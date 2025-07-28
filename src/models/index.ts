@@ -3,6 +3,7 @@ import Book from './book';
 import Review from './review';
 import UserBookProgress from './userBookProgress';
 import UserPageBookmark from './userPageBookmark';
+import UserReviewLike from './userReviewLike';
 
 User.hasMany(Review, { foreignKey: 'user_id' });
 Review.belongsTo(User, { foreignKey: 'user_id' });
@@ -20,4 +21,22 @@ Book.hasMany(UserPageBookmark, { foreignKey: 'book_id' });
 UserPageBookmark.belongsTo(User, { foreignKey: 'user_id' });
 UserPageBookmark.belongsTo(Book, { foreignKey: 'book_id' });
 
-export { User, Book, Review, UserBookProgress, UserPageBookmark };
+User.belongsToMany(Review, {
+    through: 'UserReviewLike',
+    foreignKey: 'user_id',
+    otherKey: 'review_id',
+});
+Review.belongsToMany(User, {
+    through: 'UserReviewLike',
+    foreignKey: 'review_id',
+    otherKey: 'user_id',
+});
+
+export {
+    User,
+    Book,
+    Review,
+    UserBookProgress,
+    UserPageBookmark,
+    UserReviewLike,
+};
