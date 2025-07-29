@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import passport from 'passport';
 import User from '../models/user';
+import {
+    generateCode,
+    saveCodeToStore,
+    checkCodeFromStore,
+} from '../services/auth';
+import { sendEmail } from '../utils/mailer';
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
     const { email, nick, password } = req.body;
@@ -96,4 +102,39 @@ export const logout = (req: Request, res: Response) => {
             message: '로그아웃 되었습니다.',
         });
     });
+};
+
+export const sendVerificationCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { email } = req.body;
+        const code = generateCode();
+        saveCodeToStore(email, code); //map에 저장
+        await sendEmail(email, code); //이메일 전송
+        return res.status(200).json({
+            message: '인증 코드 전송이 완료되었습니다.',
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+export const verifyCode = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, code } = req.body;
+        const isVaild = checkCodeFromStore(email, code);
+        if (!isVaild) {
+            return res.status(400).json({
+                message: '코드가 유효하지 않거나 만료되었습니다.',
+            });
+        }
+        return res.status(200).json({
+            message: '인증 성공되었습니다.',
+        });
+    } catch (err) {
+        return next(err);
+    }
 };

@@ -1,13 +1,27 @@
 import express from 'express';
 import passport from 'passport';
-import { join, login, logout } from '../controllers/auth';
-import { isLoggedIn, isNotLoggedIn } from '../middlewares/index';
+import {
+    join,
+    login,
+    logout,
+    sendVerificationCode,
+    verifyCode,
+} from '../controllers/auth';
+import {
+    isLoggedIn,
+    isNotLoggedIn,
+    validateEmailFormat,
+} from '../middlewares/index';
 
 const router = express.Router();
 
 router.post('/join', isNotLoggedIn, join);
 router.post('/login', isNotLoggedIn, login);
 router.post('/logout', isLoggedIn, logout);
+
+router.post('/send-code', validateEmailFormat, sendVerificationCode);
+
+router.post('/verify-code', verifyCode);
 
 // Kakao OAuth
 router.get('/kakao', passport.authenticate('kakao'));
