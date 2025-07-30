@@ -2,20 +2,29 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import User from '../models/user';
+import { Op } from 'sequelize';
 
 export default () => {
     passport.use(
         new LocalStrategy(
             {
-                usernameField: 'email',
+                usernameField: 'identifier', // 이메일 또는 아이디
                 passwordField: 'password',
                 passReqToCallback: false,
             },
-            async (email, password, done) => {
+            async (identifier, password, done) => {
                 try {
-                    const exUser = await User.findOne({ where: { email } });
+                    // provider가 'local'인 사용자 중 identifier가 userId 또는 email인 사용자 찾기
+                    const exUser = await User.findOne({
+                        where: {
+                            provider: 'local',
+                            [Op.or]: [
+                                { userId: identifier },
+                                { email: identifier },
+                            ],
+                        },
+                    });
 
-                    // 유저가 존재하고, 비밀번호도 존재할 때만 bcrypt 비교
                     if (exUser && exUser.password) {
                         const result = await bcrypt.compare(
                             password,
@@ -30,10 +39,8 @@ export default () => {
                         }
                     }
 
-                    // 유저가 없거나 비밀번호가 없을 때
                     return done(null, false, {
-                        message:
-                            '가입되지 않은 회원이거나 비밀번호가 없습니다.',
+                        message: '가입되지 않은 회원입니다.',
                     });
                 } catch (error) {
                     console.error(error);

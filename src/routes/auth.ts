@@ -6,6 +6,10 @@ import {
     logout,
     sendVerificationCode,
     verifyCode,
+    findIdByEmail,
+    findEmailById,
+    sendTempPassword,
+    resetPassword,
 } from '../controllers/auth';
 import {
     isLoggedIn,
@@ -20,7 +24,6 @@ router.post('/login', isNotLoggedIn, login);
 router.post('/logout', isLoggedIn, logout);
 
 router.post('/send-code', validateEmailFormat, sendVerificationCode);
-
 router.post('/verify-code', verifyCode);
 
 // Kakao OAuth
@@ -34,5 +37,11 @@ router.get(
         res.redirect('/');
     }
 );
+
+router.get('/find-id', findIdByEmail);
+router.get('/find-email', findEmailById);
+
+router.post('/reset-password/temp', sendTempPassword); //임시 비밀번호 전송
+router.patch('/reset-password', isLoggedIn, resetPassword);
 
 export default router;

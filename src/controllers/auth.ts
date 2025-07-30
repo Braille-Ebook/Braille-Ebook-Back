@@ -10,20 +10,55 @@ import {
 import { sendEmail } from '../utils/mailer';
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, nick, password } = req.body;
-
+    const { userId, email, nick, password } = req.body;
     try {
-        const exUser = await User.findOne({ where: { email } });
-        if (exUser) {
+        if (!userId || userId.trim() === '') {
             return res.status(400).json({
                 success: false,
+                message: '아이디는 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!email || email.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '이메일은 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!nick || nick.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '닉네임은 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!password || password.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '비밀번호는 필수 입력 항목입니다.',
+            });
+        }
+
+        const exId = await User.findOne({ where: { userId } });
+        if (exId) {
+            return res.status(409).json({
+                success: false,
+                message: '이미 사용중인 아이디입니다.',
+            });
+        }
+
+        const exUser = await User.findOne({ where: { email } });
+        if (exUser) {
+            return res.status(409).json({
+                success: false,
                 message: '이미 가입된 이메일입니다.',
-            }); //유저 있으면 에러
+            });
         }
 
         const exNick = await User.findOne({ where: { nickname: nick } });
         if (exNick) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
                 message: '이미 사용 중인 닉네임입니다.',
             });
@@ -38,6 +73,7 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
         const hash = await bcrypt.hash(password, 12); //비밀번호 암호화
 
         await User.create({
+            userId,
             email,
             nickname: nick,
             password: hash,
@@ -79,13 +115,14 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
                     return next(loginError);
                 }
 
-                const { user_id, email, nickname } = user as User;
+                const { user_id, userId, email, nickname } = user as User;
 
                 return res.status(200).json({
                     success: true,
                     message: '로그인 성공',
                     user: {
                         id: user_id,
+                        userId,
                         email,
                         nickname,
                     },
@@ -136,5 +173,155 @@ export const verifyCode = (req: Request, res: Response, next: NextFunction) => {
         });
     } catch (err) {
         return next(err);
+    }
+};
+
+export const findIdByEmail = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { email } = req.query;
+        if (!email || typeof email !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: '이메일을 올바르게 입력해주세요.',
+            });
+        }
+
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 이메일로 가입된 계정이 없습니다.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            userId: user.userId,
+        });
+    } catch (err) {
+        console.error(err);
+        return next(err);
+    }
+};
+
+export const findEmailById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { userId } = req.query;
+        if (!userId || typeof userId !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: '아이디를 올바르게 입력해주세요.',
+            });
+        }
+
+        const user = await User.findOne({ where: { userId } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 아이디로 가입된 계정이 없습니다.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            email: user?.email,
+        });
+    } catch (err) {
+        console.error(err);
+        return next(err);
+    }
+};
+
+export const sendTempPassword = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 이메일로 가입된 유저가 없습니다.',
+            });
+        }
+
+        const tempPassword = generateCode();
+        const hashed = await bcrypt.hash(tempPassword, 12);
+        await user.update({ password: hashed });
+
+        await sendEmail(email, tempPassword, true);
+        return res.status(200).json({
+            success: true,
+            message: '임시 비밀번호가 전송되었습니다.',
+        });
+    } catch (err) {
+        console.error(err);
+        return next(err);
+    }
+};
+
+export const resetPassword = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const userPk = (req.user as User).user_id;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                message: '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.',
+            });
+        }
+
+        const user = await User.findByPk(userPk);
+        if (!user) {
+            return res.status(404).json({
+                message: '유저를 찾을 수 없습니다.',
+            });
+        }
+        if (!user.password) {
+            return res.status(400).json({
+                message: '비밀번호 정보가 없습니다.',
+            });
+        }
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                message: '현재 비밀번호가 일치하지 않습니다.',
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                message: '비밀번호는 최소 6자 이상입니다.',
+            });
+        }
+
+        if (user.provider !== 'local') {
+            return res.status(403).json({
+                message: '소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.',
+            });
+        }
+
+        const hashed = await bcrypt.hash(newPassword, 12);
+        await user.update({ password: hashed });
+
+        return res.status(200).json({
+            message: '비밀번호가 성공적으로 변경되었습니다.',
+        });
+    } catch (err) {
+        next(err);
     }
 };

@@ -3,6 +3,7 @@ import sequelize from '../sequelize';
 
 interface UserAttributes {
     user_id: number;
+    userId?: string;
     email: string;
     password?: string;
     nickname: string;
@@ -12,7 +13,10 @@ interface UserAttributes {
 }
 
 interface UserCreationAttributes
-    extends Optional<UserAttributes, 'user_id' | 'sns_id' | 'created_at'> {}
+    extends Optional<
+        UserAttributes,
+        'user_id' | 'userId' | 'sns_id' | 'created_at'
+    > {}
 //회원가입 시 입력받지 않아도 되는 필드
 
 class User
@@ -20,6 +24,7 @@ class User
     implements UserAttributes
 {
     public user_id!: number;
+    public userId?: string;
     public email!: string;
     public password?: string;
     public nickname!: string;
@@ -34,6 +39,11 @@ User.init(
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
+        },
+        userId: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+            unique: true,
         },
         email: {
             type: DataTypes.STRING(100),
