@@ -52,13 +52,7 @@ app.use(passport.initialize());
 app.use(passport.session()); //로그인 상태 세션 기반으로 유지
 
 app.use('/auth', authRouter);
-
-//passport 연결
-app.use(passport.initialize());
-app.use(passport.session()); //로그인 상태 세션 기반으로 유지
-
 app.use('/', pageRouter);
-app.use('/auth', authRouter);
 app.use('/book/:bookId/review', reviewRouter);
 
 app.use((req, res, next) => {
