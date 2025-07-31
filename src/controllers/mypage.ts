@@ -1,5 +1,20 @@
 import { RequestHandler } from 'express';
-import { Book, Review } from '../models';
+import { Book, Review, User } from '../models';
+
+const getMyInfo: RequestHandler = async (req, res, next) => {
+    const user = await User.findByPk(req.user!.user_id);
+    const numOfReview = await Review.count({
+        where: {
+            user_id: req.user!.user_id,
+        },
+    });
+    const result = {
+        //아이디란이 없음. 아마 13번 REFACTOR에 추가될 예정인 것 같음
+        nickname: user?.dataValues.nickname,
+        numOfReview,
+    };
+    res.status(200).send(result);
+};
 
 const getMyReviews: RequestHandler = async (req, res, next) => {
     const previewLength = 50;
@@ -31,4 +46,4 @@ const getMyReviews: RequestHandler = async (req, res, next) => {
     res.status(200).send(result);
 };
 
-export { getMyReviews };
+export { getMyInfo, getMyReviews };
