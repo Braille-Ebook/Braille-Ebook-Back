@@ -9,6 +9,7 @@ import path from 'path';
 import pageRouter from './routes/page';
 import reviewRouter from './routes/review';
 import authRouter from './routes/auth';
+import mypageRouter from './routes/mypage';
 import passportConfig from './passport';
 import './models';
 
@@ -60,6 +61,7 @@ app.use(passport.session()); //로그인 상태 세션 기반으로 유지
 app.use('/', pageRouter);
 app.use('/auth', authRouter);
 app.use('/book/:bookId/review', reviewRouter);
+app.use('/mypage', mypageRouter);
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
