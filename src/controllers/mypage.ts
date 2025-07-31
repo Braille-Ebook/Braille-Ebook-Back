@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { Book, Review, User } from '../models';
+import { Book, Review, User, UserBookProgress } from '../models';
 
 const getMyInfo: RequestHandler = async (req, res, next) => {
     const user = await User.findByPk(req.user!.user_id);
@@ -8,12 +8,22 @@ const getMyInfo: RequestHandler = async (req, res, next) => {
             user_id: req.user!.user_id,
         },
     });
+    const numOfReadBooks = await UserBookProgress.count({
+        where: {
+            user_id: req.user!.user_id,
+        },
+    });
     const result = {
         //아이디란이 없음. 아마 13번 REFACTOR에 추가될 예정인 것 같음
         nickname: user?.dataValues.nickname,
         numOfReview,
+        numOfReadBooks,
     };
-    res.status(200).send(result);
+    res.status(200).send({
+        success: true,
+        message: '마이페이지 정보 불러오기가 성공했습니다.',
+        data: result,
+    });
 };
 
 const getMyReviews: RequestHandler = async (req, res, next) => {
@@ -27,6 +37,13 @@ const getMyReviews: RequestHandler = async (req, res, next) => {
     const result = await Promise.all(
         reviews.map(async (review) => {
             const book = await Book.findByPk(review.dataValues.book_id);
+            const isBookmarked = await UserBookProgress.findOne({
+                where: {
+                    user_id: req.user!.user_id,
+                    book_id: book?.dataValues.book_id,
+                },
+                attributes: ['is_bookmarked'],
+            });
             return {
                 reviewId: review.dataValues.review_id,
                 bookId: review.dataValues.book_id,
@@ -34,7 +51,7 @@ const getMyReviews: RequestHandler = async (req, res, next) => {
                 author: book?.dataValues.author,
                 translator: book?.dataValues.translator,
                 likeCount: review.dataValues.like_count,
-                //북마크 여부는 아직 관련 DB의 데이터를 채우지 않아서 나중에 추가할 예정
+                isBookmarked: isBookmarked?.dataValues.is_bookmarked || false,
                 reviewPreview:
                     review.dataValues.content.slice(0, previewLength) +
                     (review.dataValues.content.length > previewLength
@@ -43,7 +60,11 @@ const getMyReviews: RequestHandler = async (req, res, next) => {
             };
         })
     );
-    res.status(200).send(result);
+    res.status(200).send({
+        success: true,
+        message: '리뷰 정보 불러오기가 성공했습니다.',
+        data: result,
+    });
 };
 
 export { getMyInfo, getMyReviews };
