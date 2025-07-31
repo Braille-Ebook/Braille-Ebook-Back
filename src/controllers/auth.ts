@@ -4,20 +4,56 @@ import passport from 'passport';
 import User from '../models/user';
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, nick, password } = req.body;
+    const { userId, email, nick, password } = req.body;
 
     try {
-        const exUser = await User.findOne({ where: { email } });
-        if (exUser) {
+        if (!userId || userId.trim() === '') {
             return res.status(400).json({
                 success: false,
+                message: '아이디는 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!email || email.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '이메일은 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!nick || nick.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '닉네임은 필수 입력 항목입니다.',
+            });
+        }
+
+        if (!password || password.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: '비밀번호는 필수 입력 항목입니다.',
+            });
+        }
+
+        const exId = await User.findOne({ where: { userId } });
+        if (exId) {
+            return res.status(409).json({
+                success: false,
+                message: '이미 사용중인 아이디입니다.',
+            });
+        }
+
+        const exUser = await User.findOne({ where: { email } });
+        if (exUser) {
+            return res.status(409).json({
+                success: false,
                 message: '이미 가입된 이메일입니다.',
-            }); //유저 있으면 에러
+            });
         }
 
         const exNick = await User.findOne({ where: { nickname: nick } });
         if (exNick) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
                 message: '이미 사용 중인 닉네임입니다.',
             });
@@ -32,6 +68,7 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
         const hash = await bcrypt.hash(password, 12); //비밀번호 암호화
 
         await User.create({
+            userId,
             email,
             nickname: nick,
             password: hash,
@@ -73,13 +110,14 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
                     return next(loginError);
                 }
 
-                const { user_id, email, nickname } = user as User;
+                const { user_id, userId, email, nickname } = user as User;
 
                 return res.status(200).json({
                     success: true,
                     message: '로그인 성공',
                     user: {
                         id: user_id,
+                        userId,
                         email,
                         nickname,
                     },
