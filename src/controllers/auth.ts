@@ -152,6 +152,7 @@ export const sendVerificationCode = async (
         saveCodeToStore(email, code); //map에 저장
         await sendEmail(email, code); //이메일 전송
         return res.status(200).json({
+            success: true,
             message: '인증 코드 전송이 완료되었습니다.',
         });
     } catch (err) {
@@ -162,13 +163,21 @@ export const sendVerificationCode = async (
 export const verifyCode = (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, code } = req.body;
-        const isVaild = checkCodeFromStore(email, code);
-        if (!isVaild) {
+        const result = checkCodeFromStore(email, code);
+        if (result == 'expired') {
             return res.status(400).json({
-                message: '코드가 유효하지 않거나 만료되었습니다.',
+                success: false,
+                message: '인증 코드가 만료되었습니다.',
+            });
+        }
+        if (result == 'invalid') {
+            return res.status(400).json({
+                success: false,
+                message: '인증 코드가 일치하지 않습니다.',
             });
         }
         return res.status(200).json({
+            success: true,
             message: '인증 성공되었습니다.',
         });
     } catch (err) {
@@ -182,7 +191,7 @@ export const findIdByEmail = async (
     next: NextFunction
 ) => {
     try {
-        const { email } = req.query;
+        const { email } = req.body;
         if (!email || typeof email !== 'string') {
             return res.status(400).json({
                 success: false,
@@ -214,7 +223,7 @@ export const findEmailById = async (
     next: NextFunction
 ) => {
     try {
-        const { userId } = req.query;
+        const { userId } = req.body;
         if (!userId || typeof userId !== 'string') {
             return res.status(400).json({
                 success: false,
@@ -232,7 +241,7 @@ export const findEmailById = async (
 
         return res.status(200).json({
             success: true,
-            email: user?.email,
+            email: user.email,
         });
     } catch (err) {
         console.error(err);
@@ -281,6 +290,7 @@ export const resetPassword = async (
 
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
+                success: false,
                 message: '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.',
             });
         }
@@ -288,29 +298,34 @@ export const resetPassword = async (
         const user = await User.findByPk(userPk);
         if (!user) {
             return res.status(404).json({
+                success: false,
                 message: '유저를 찾을 수 없습니다.',
             });
         }
         if (!user.password) {
             return res.status(400).json({
+                success: false,
                 message: '비밀번호 정보가 없습니다.',
             });
         }
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(401).json({
+                success: false,
                 message: '현재 비밀번호가 일치하지 않습니다.',
             });
         }
 
         if (newPassword.length < 6) {
             return res.status(400).json({
+                success: false,
                 message: '비밀번호는 최소 6자 이상입니다.',
             });
         }
 
         if (user.provider !== 'local') {
             return res.status(403).json({
+                success: false,
                 message: '소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.',
             });
         }
@@ -319,6 +334,7 @@ export const resetPassword = async (
         await user.update({ password: hashed });
 
         return res.status(200).json({
+            success: true,
             message: '비밀번호가 성공적으로 변경되었습니다.',
         });
     } catch (err) {

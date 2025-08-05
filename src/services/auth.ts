@@ -17,16 +17,18 @@ export const saveCodeToStore = (email: string, code: string) => {
 export const checkCodeFromStore = (
     email: string,
     inputCode: string
-): boolean => {
+): 'valid' | 'expired' | 'invalid' => {
     const record = verificationStore.get(email);
-    if (!record) return false;
+    if (!record) return 'invalid';
 
     const { code, expiresAt } = record;
 
     if (Date.now() > expiresAt) {
         verificationStore.delete(email);
-        return false;
+        return 'expired';
     }
 
-    return code === inputCode;
+    if (code !== inputCode) return 'invalid';
+
+    return 'valid';
 };

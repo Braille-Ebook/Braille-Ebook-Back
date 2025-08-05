@@ -38,8 +38,8 @@ router.get(
     }
 );
 
-router.get('/find-id', findIdByEmail);
-router.get('/find-email', findEmailById);
+router.post('/find-id', findIdByEmail);
+router.post('/find-email', findEmailById);
 
 router.post('/reset-password/temp', sendTempPassword); //임시 비밀번호 전송
 router.patch('/reset-password', isLoggedIn, resetPassword);
