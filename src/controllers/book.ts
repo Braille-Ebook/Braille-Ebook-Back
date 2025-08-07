@@ -21,6 +21,7 @@ export const getBookInfo = async (
 
         return res.status(200).json({
             success: true,
+            message: '도서정보 조회 성공',
             data: book,
         });
     } catch (err) {
