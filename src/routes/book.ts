@@ -14,6 +14,6 @@ router.get('/:bookId', getBookInfo);
 router.post('/:bookId/bookmark', isLoggedIn, addBookMark);
 router.delete('/:bookId/bookmark', isLoggedIn, deleteBookMark);
 router.post('/:bookId/start', isLoggedIn, startRead);
-router.get('/:bookId/progress', isLoggedIn, getProgress);
+router.get('/:bookId/continue', isLoggedIn, getProgress);
 
 export default router;
