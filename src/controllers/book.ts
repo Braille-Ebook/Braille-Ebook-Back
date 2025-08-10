@@ -164,6 +164,7 @@ export const startRead = async (
     try {
         const userPk = req.user?.user_id;
         const bookId = parseInt(req.params.bookId);
+        const force = req.query.force === 'true';
 
         if (!userPk) {
             return res.status(401).json({
@@ -187,6 +188,22 @@ export const startRead = async (
             });
         }
 
+        const record = await UserBookProgress.findOne({
+            where: { user_id: userPk, book_id: bookId },
+        });
+
+        if (
+            record &&
+            (record.last_page !== 0 || record.last_char !== 0) &&
+            !force
+        ) {
+            return res.status(409).json({
+                success: false,
+                message:
+                    '이어 읽기 정보가 있습니다. 처음부터 읽으려면 force=true로 호출하세요.',
+            });
+        }
+
         await UserBookProgress.upsert({
             user_id: userPk,
             book_id: bookId,
@@ -197,7 +214,9 @@ export const startRead = async (
 
         return res.status(200).json({
             success: true,
-            message: '처음부터 읽기 정보입니다.',
+            message: force
+                ? '읽기 정보를 초기화했습니다.'
+                : '처음부터 읽기 정보입니다.',
             data: {
                 page: 0,
                 charIndex: 0,
@@ -240,16 +259,16 @@ export const getProgress = async (
             });
         }
 
-        const record = await UserBookProgress.findOne({
+        const [record] = await UserBookProgress.findOrCreate({
             where: { user_id: userPk, book_id: bookId },
+            defaults: {
+                user_id: userPk,
+                book_id: bookId,
+                last_page: 0,
+                last_char: 0,
+                updated_at: new Date(),
+            },
         });
-
-        if (!record) {
-            return res.status(200).json({
-                success: false,
-                message: '이어 읽기 정보가 없습니다.',
-            });
-        }
 
         return res.status(200).json({
             success: true,
