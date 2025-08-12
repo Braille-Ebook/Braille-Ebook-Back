@@ -8,7 +8,14 @@ export const getBookInfo = async (
     next: NextFunction
 ) => {
     try {
-        const { bookId } = req.params;
+        const bookId = parseInt(req.params.bookId);
+
+        if (isNaN(bookId)) {
+            return res.status(400).json({
+                success: false,
+                message: '올바르지 않은 책 ID입니다.',
+            });
+        }
 
         const book = await Book.findByPk(bookId); //Book.findOne({where:{book_id:bookId}})
 
